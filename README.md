@@ -59,7 +59,7 @@ public void VerifyProtobufSchema_Stable()
 If a schema change is detected, the test will fail with a list of differences:
 
 ```
-IGreeterCodeFirst differences:
+ProtoContractGuard IGreeterCodeFirst differences:
 -    string FirstName = 1;
 +    string Name = 1;
 -    int32 Length = 3;
