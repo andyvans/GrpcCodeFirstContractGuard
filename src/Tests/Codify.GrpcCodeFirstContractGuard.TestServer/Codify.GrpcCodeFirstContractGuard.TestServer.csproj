@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="protobuf-net" />
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" />
+        <PackageReference Include="System.ServiceModel.Primitives" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Codify.GrpcCodeFirstContractGuard.TestServer.Models\Codify.GrpcCodeFirstContractGuard.TestServer.Models.csproj" />
+      <ProjectReference Include="..\..\Codify.GrpcCodeFirstContractGuard\Codify.GrpcCodeFirstContractGuard.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+
+</Project>

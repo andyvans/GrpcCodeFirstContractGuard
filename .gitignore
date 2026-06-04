@@ -1,0 +1,11 @@
+*.suo
+*.user
+.vs/
+
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+**/PublishProfiles
+**/*.tmp

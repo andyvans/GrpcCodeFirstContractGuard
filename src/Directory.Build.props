@@ -1,0 +1,16 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>Andy van Stokkum</Authors>
+    <Company>Codify</Company>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageProjectUrl>https://github.com/andyvans/GrpcCodeFirstContractGuard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/andyvans/GrpcCodeFirstContractGuard</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>codify.png</PackageIcon>
+    <PackageIconUrl />
+    <PackageTags>grpc;code-first;proto verification;proto schema</PackageTags>
+  </PropertyGroup>
+
+</Project>

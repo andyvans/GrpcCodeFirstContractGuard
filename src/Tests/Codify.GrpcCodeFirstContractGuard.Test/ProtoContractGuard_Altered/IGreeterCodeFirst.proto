@@ -1,0 +1,26 @@
+syntax = "proto3";
+package Codify.GrpcCodeFirstContractGuard.TestServer.Models;
+import "protobuf-net/bcl.proto"; // schema for protobuf-net's handling of core .NET types
+
+message HelloCodeFirstRequest {
+   string FirstName = 1;
+   string Action = 2;
+   int32 Length = 3;
+   .bcl.TimeSpan Duration = 4;
+   string AdditionalInfo = 5;
+   MoreInfo MoreInfo = 6;
+}
+message HelloCodeFirstResponse {
+   string Name = 1;
+}
+message MoreInfo {
+   string Infomation = 1;
+   repeated string ArrayData = 2;
+   string Metadata = 3;
+}
+service GreeterCodeFirst {
+   rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+   rpc SayHelloClientStream (stream HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+   rpc SayHelloDuplexStream (stream HelloCodeFirstRequest) returns (stream HelloCodeFirstResponse);
+   rpc SayHelloServerStream (HelloCodeFirstRequest) returns (stream HelloCodeFirstResponse);
+}

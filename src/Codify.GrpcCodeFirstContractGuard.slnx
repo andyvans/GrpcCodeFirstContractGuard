@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Build/">
+    <File Path="../.github/workflows/build.yml" />
+    <File Path="../README.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Codify.GrpcCodeFirstContractGuard.Test/Codify.GrpcCodeFirstContractGuard.Test.csproj" />
+    <Project Path="Tests/Codify.GrpcCodeFirstContractGuard.TestServer.Models/Codify.GrpcCodeFirstContractGuard.TestServer.Models.csproj" />
+    <Project Path="Tests/Codify.GrpcCodeFirstContractGuard.TestServer/Codify.GrpcCodeFirstContractGuard.TestServer.csproj" />
+  </Folder>
+  <Project Path="Codify.GrpcCodeFirstContractGuard/Codify.GrpcCodeFirstContractGuard.csproj" />
+</Solution>

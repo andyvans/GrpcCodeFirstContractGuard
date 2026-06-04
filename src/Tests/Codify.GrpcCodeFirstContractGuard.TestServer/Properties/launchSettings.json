@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Codify.GrpcCodeFirstContractGuard.TestServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:58334;http://localhost:58335"
+    }
+  }
+}
