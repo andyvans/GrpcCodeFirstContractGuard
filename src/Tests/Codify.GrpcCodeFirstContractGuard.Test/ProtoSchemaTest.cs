@@ -7,7 +7,7 @@ namespace Codify.GrpcCodeFirstContractGuard.Test;
 public class ProtoSchemaTest
 {
     [Fact]
-    public void GenerateProtoSchema()
+    public void GenerateBaselineProtoSchema()
     {
         var generatedFiles = ProtoContractGuard.GenerateResourceFiles(
         [
@@ -16,10 +16,18 @@ public class ProtoSchemaTest
 
         generatedFiles.Should().HaveCount(1);
         generatedFiles.First().Should().EndWith(Path.Combine("ProtoContractGuard", "IGreeterCodeFirst.proto"));
+
+        foreach (var generatedFile in generatedFiles)
+        {
+            File.Exists(generatedFile).Should().BeTrue($"Generated file {generatedFile} should exist");
+            var protoSchema = File.ReadAllText(generatedFile);
+            protoSchema.Should().Contain("syntax = \"proto3\";");
+            protoSchema.Should().Contain("package Codify.GrpcCodeFirstContractGuard.TestServer.Models;");
+        }
     }
 
     [Fact]
-    public void VerifyProtobufSchema_Stable()
+    public void VerifyProtoSchema_Stable()
     {
         var schemaDifferences = ProtoContractGuard.VerifyProtobufSchemaStable(
         [
@@ -30,7 +38,7 @@ public class ProtoSchemaTest
     }
 
     [Fact]
-    public void VerifyProtobufSchema_Altered()
+    public void VerifyProtoSchema_Altered()
     {
         var schemaDifferences = ProtoContractGuard.VerifyProtobufSchemaStable(
         [
@@ -40,16 +48,16 @@ public class ProtoSchemaTest
         schemaDifferences.Should().BeEquivalentTo(
             [
                 "ProtoContractGuard IGreeterCodeFirst differences:",
-                "-    string FirstName = 1;",
-                "+    string Name = 1;",
-                "-    int32 Length = 3;",
-                "+    int32 Age = 3;",
-                "+    repeated MoreInfo MoreInfoArray = 7;",
-                "-    string Infomation = 1;",
-                "+    string Info = 1;",
-                "-    string Metadata = 3;",
-                "-    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);",
-                "+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);"
+                "  -    string FirstName = 1;",
+                " 6+    string Name = 1;",
+                "  -    int32 Length = 3;",
+                " 8+    int32 Age = 3;",
+                "12+    repeated MoreInfo MoreInfoArray = 7;",
+                "  -    string Information = 1;",
+                "18+    string Info = 1;",
+                "  -    string Metadata = 3;",
+                "  -    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);",
+                "22+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);"
             ]);
     }
 }

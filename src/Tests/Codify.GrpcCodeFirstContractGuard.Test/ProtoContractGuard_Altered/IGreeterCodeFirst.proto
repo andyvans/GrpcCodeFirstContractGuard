@@ -14,7 +14,7 @@ message HelloCodeFirstResponse {
    string Name = 1;
 }
 message MoreInfo {
-   string Infomation = 1;
+   string Information = 1;
    repeated string ArrayData = 2;
    string Metadata = 3;
 }
