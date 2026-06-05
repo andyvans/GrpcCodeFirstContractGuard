@@ -9,7 +9,8 @@
     <RepositoryUrl>https://github.com/andyvans/GrpcCodeFirstContractGuard</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>codify.png</PackageIcon>
-    <PackageIconUrl />
+	<PackageIconUrl />
+	<PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>grpc;code-first;proto verification;proto schema</PackageTags>
   </PropertyGroup>
 
