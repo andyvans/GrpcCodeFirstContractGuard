@@ -9,6 +9,7 @@
   <ItemGroup>
       <PackageReference Include="DiffPlex" />
       <PackageReference Include="protobuf-net.Grpc.Reflection" />
+      <PackageReference Include="System.Security.Cryptography.Xml" />
       <PackageReference Include="System.ServiceModel.Primitives" />
   </ItemGroup>
 
