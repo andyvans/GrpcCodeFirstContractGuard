@@ -60,16 +60,16 @@ public void VerifyProtobufSchema_Stable()
 }
 ```
 
-If a schema change is detected, the test will fail with a list of differences:
+If a schema change is detected, the test will fail with a list of differences. The line differences include the line number, change type, and the text of the line:
 
 ```
 ProtoContractGuard IGreeterCodeFirst differences:
--    string FirstName = 1;
-+    string Name = 1;
--    string Infomation = 1;
-+    string Info = 1;
--    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
-+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+  -    string FirstName = 1;
+ 6+    string Name = 1;
+  -    string Infomation = 1;
+ 8+    string Info = 1;
+  -    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+22+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
 ```
 
 4. If the schema change is intentional, regenerate the baseline files by running `GenerateResourceFiles` again and commit the updated `.proto` files.
