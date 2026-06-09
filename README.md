@@ -39,7 +39,7 @@ public void GenerateProtoSchema()
     ]);
 
     // Assert that the expected number of files were generated
-    generatedFiles.Should().HaveCount(1);
+    generatedFiles.Should().NotBeEmpty("Baseline files should be generated");
 }
 ```
 
@@ -56,7 +56,7 @@ public void VerifyProtobufSchema_Stable()
     ]);
 
     // Assert that there are no differences in the schema
-    schemaDifferences.Should().BeEmpty("Schema differences should be empty for stable protobuf schemas");
+    schemaDifferences.Should().BeNull("Schema differences should be empty for stable protobuf schemas");
 }
 ```
 
