@@ -19,60 +19,73 @@ For more background, see [Automatic gRPC Schema Validation](https://www.codify.n
 
 ## Getting Started
 
-1. Install the NuGet package:
+1. Open your gRPC test project and install the NuGet package:
 
 ```shell
 dotnet add package Codify.GrpcCodeFirstContractGuard
 ```
 
-2. Add a test to generate the baseline `.proto` schema files. Mark it with `Skip = "Run manually to regenerate baseline"` or for NUnit `[Explicit]` so it doesn't run automatically — only run it manually when you need to create or update the baseline.
+2. Add a test class called `ProtoContractGuardTest` (or similar) to your test project. This class will contain the tests for generating the baseline schema and verifying it.
 
-This generates `.proto` files into a `ProtoContractGuard` folder in the test project directory. Commit these files to source control — they serve as the baseline for future comparisons.
+3. Add a test to generate the baseline `.proto` schema files. Mark it with `Skip = "Run manually to regenerate baseline"` or for NUnit `[Explicit]` so it doesn't run automatically — only run it manually when you need to create or update the baseline.
+
+4. Add a test to verify that the schema hasn't changed. This test runs on every build and will fail if the schema has drifted:
 
 ```csharp
-[Fact(Skip = "Run manually to regenerate baseline")] 
-public void GenerateProtoSchema()
+public class ProtoContractGuardTest
 {
-    var generatedFiles = ProtoContractGuard.GenerateBaselineFiles(
-    [
-        typeof(IGreeterCodeFirst) // Add one of your contract interfaces from each namespace. The rest will be discovered.
-    ]);
+    [Fact(Skip = "Run manually to regenerate baseline")] 
+    public void GenerateProtoSchema()
+    {
+        var generatedFiles = ProtoContractGuard.GenerateBaselineFiles(
+        [
+            // One of the contract interfaces from each namespace. The rest will be discovered.
+            typeof(IGreeterCodeFirst) 
+        ]);
 
-    // Assert that the expected number of files were generated
-    generatedFiles.Should().NotBeEmpty("Baseline files should be generated");
+        // Assert that the expected number of files were generated
+        generatedFiles.Should().NotBeEmpty("Baseline files should be generated");
+    }
+
+    [Fact]
+    public void VerifyProtobufSchema()
+    {
+        var schemaDifferences = ProtoContractGuard.CompareCurrentToBaseline(
+        [
+            // One of the contract interfaces from each namespace. The rest will be discovered.
+            typeof(IGreeterCodeFirst)
+        ]);
+
+        // Assert that there are no differences in the schema
+        schemaDifferences.Should().BeNull("Schema differences should be empty for stable protobuf schemas");
+    }
 }
 ```
 
-
-3. Add a test to verify that the schema hasn't changed. This test runs on every build and will fail if the schema has drifted:
-
+5. When you run the `GenerateProtoSchema` test, it will create folder structure like this in your test project:
 ```csharp
-[Fact]
-public void VerifyProtobufSchema_Stable()
-{
-    var schemaDifferences = ProtoContractGuard.CompareCurrentToBaseline(
-    [
-        typeof(IGreeterCodeFirst) // Add one of your contract interfaces from each namespace. The rest will be discovered.
-    ]);
-
-    // Assert that there are no differences in the schema
-    schemaDifferences.Should().BeNull("Schema differences should be empty for stable protobuf schemas");
-}
+TestProject/
+    ProtoContractGuardTest.cs
+    ProtoContractGuard/
+        IGreeterCodeFirst.proto
+        IGreeterCodeFirstV2.proto
 ```
 
-If a schema change is detected, the test will fail with a list of differences. The differences include the line number, change type, and the text of the line:
+
+6. When the `VerifyProtobufSchema` test is run, it will compare the current schema against the baseline. If a schema change is detected, the test will fail with a list of differences. The differences include the line number, change type, and the text of the line. For example:
 
 ```
-ProtoContractGuard IGreeterCodeFirst differences:
+[IGreeterCodeFirst.proto] ProtoContractGuard detected differences for IGreeterCodeFirst
   -    string FirstName = 1;
  6+    string Name = 1;
   -    string Infomation = 1;
  8+    string Info = 1;
   -    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
 22+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+[IGreeterCodeFirstV2.proto] ProtoContractGuard issue: No baseline found. Run GenerateBaselineFiles to create baseline for IGreeterCodeFirstV2.
 ```
 
-4. If the schema change is intentional, regenerate the baseline files by running `GenerateResourceFiles` again and commit the updated `.proto` files.
+If the schema change is intentional, regenerate the baseline files by running `GenerateBaselineFiles` again and commit the updated `.proto` files. If not, then review your changes and fix any unintended breaking changes before committing.
 
 ## How It Works
 
