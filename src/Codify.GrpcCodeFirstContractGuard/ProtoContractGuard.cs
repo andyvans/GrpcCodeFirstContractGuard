@@ -19,18 +19,18 @@ public static class ProtoContractGuard
     ///     Compares the current code-first gRPC schema against persisted .proto baseline files
     ///     and returns a list of differences. An empty list indicates the schema is stable.
     /// </summary>
-    /// <param name="grpcContractTypes">A sample of the gRPC contract types to verify. The namespace of these types will be used to find related gRPC service interfaces.</param>
-    /// <param name="grpcAssemblies">The assemblies containing the gRPC services. If null, all loaded assemblies are used.</param>
+    /// <param name="contractNamespaceTypes">A sample of the gRPC contract types to verify. The namespace of these types will be used to find related gRPC service interfaces.</param>
+    /// <param name="serviceAssemblies">The assemblies containing the gRPC services. If null, all loaded assemblies are used.</param>
     /// <param name="protoFilePath">The path to the .proto files.</param>
     /// <param name="callerFilePath">The file path of the caller. This is used to locate the .proto files relative to the caller's location e.g. the unit test.</param>
-    /// <returns>A list of schema differences. An empty list indicates the schema is stable.</returns>
-    public static List<string> VerifyProtobufSchemaStable(
-        IEnumerable<Type> grpcContractTypes,
-        IEnumerable<Assembly>? grpcAssemblies = null,
+    /// <returns>The schema differences. A null value indicates the schema is stable.</returns>
+    public static string? CompareCurrentToBaseline(
+        IEnumerable<Type> contractNamespaceTypes,
+        IEnumerable<Assembly>? serviceAssemblies = null,
         string protoFilePath = DefaultProtoFilePath,
         [CallerFilePath] string callerFilePath = "")
     {
-        var grpcServiceInterfaces = GetGrpcServiceInterfaces(grpcContractTypes, grpcAssemblies);
+        var grpcServiceInterfaces = GetGrpcServiceInterfaces(contractNamespaceTypes, serviceAssemblies);
         var persistedSchemas = GetPersistedSchemas(protoFilePath, callerFilePath);
         var schemaGenerator = new SchemaGenerator();
         var schemaDifferences = new List<string>();
@@ -45,7 +45,7 @@ public static class ProtoContractGuard
             persistedSchemas.TryGetValue(currentSchemaFile, out var currentSchema);
             if (currentSchema == null)
             {
-                schemaDifferences.Add($"ProtoContractGuard {grpcServiceInterface.Name}: no baseline found. Run GenerateResourceFiles to create baseline for {currentSchemaFile}.");
+                schemaDifferences.Add($"[{currentSchemaFile}] ProtoContractGuard issue: No baseline found. Run GenerateBaselineFiles to create baseline for {grpcServiceInterface.Name}.");
                 continue;
             }
 
@@ -71,30 +71,32 @@ public static class ProtoContractGuard
 
             if (differences.Any())
             {
-                schemaDifferences.Add($"ProtoContractGuard {grpcServiceInterface.Name} differences:");
+                schemaDifferences.Add($"[{currentSchemaFile}] ProtoContractGuard detected differences for {grpcServiceInterface.Name}:");
                 schemaDifferences.AddRange(differences);
             }
         }
-
-        return schemaDifferences;
+        
+        return schemaDifferences.Any() 
+            ? string.Join(Environment.NewLine, schemaDifferences)
+            : null;
     }
 
     /// <summary>
     ///     Generates baseline .proto schema files from code-first gRPC service interfaces.
     ///     Run this when adding new services or after intentionally changing the schema.
     /// </summary>
-    /// <param name="grpcContractTypes">A sample of the gRPC contract types to verify. The namespace of these types will be used to find related gRPC service interfaces.</param>
-    /// <param name="grpcAssemblies">The assemblies containing the gRPC services. If null, all loaded assemblies are used.</param>
+    /// <param name="contractNamespaceTypes">A sample of the gRPC contract types to verify. The namespace of these types will be used to find related gRPC service interfaces.</param>
+    /// <param name="serviceAssemblies">The assemblies containing the gRPC services. If null, all loaded assemblies are used.</param>
     /// <param name="protoFilePath">The path to the .proto files.</param>
     /// <param name="callerFilePath">The file path of the caller. This is used to locate the .proto files relative to the caller's location e.g. the unit test.</param>
     /// <returns>A list of generated .proto file paths.</returns>
-    public static List<string> GenerateResourceFiles(
-        IEnumerable<Type> grpcContractTypes,
-        IEnumerable<Assembly>? grpcAssemblies = null,
+    public static List<string> GenerateBaselineFiles(
+        IEnumerable<Type> contractNamespaceTypes,
+        IEnumerable<Assembly>? serviceAssemblies = null,
         string protoFilePath = DefaultProtoFilePath,
         [CallerFilePath] string callerFilePath = "")
     {
-        var grpcServiceInterfaces = GetGrpcServiceInterfaces(grpcContractTypes, grpcAssemblies);
+        var grpcServiceInterfaces = GetGrpcServiceInterfaces(contractNamespaceTypes, serviceAssemblies);
         var schemaGenerator = new SchemaGenerator();
         var generatedFiles = new List<string>();
         var protoPath = GetGeneratedProtoPath(protoFilePath, callerFilePath);

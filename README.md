@@ -33,9 +33,9 @@ This generates `.proto` files into a `ProtoContractGuard` folder in the test pro
 [Fact(Skip = "Run manually to regenerate baseline")] 
 public void GenerateProtoSchema()
 {
-    var generatedFiles = ProtoContractGuard.GenerateResourceFiles(
+    var generatedFiles = ProtoContractGuard.GenerateBaselineFiles(
     [
-        typeof(IGreeterCodeFirst)
+        typeof(IGreeterCodeFirst) // Add one of your contract interfaces from each namespace. The rest will be discovered.
     ]);
 
     // Assert that the expected number of files were generated
@@ -50,9 +50,9 @@ public void GenerateProtoSchema()
 [Fact]
 public void VerifyProtobufSchema_Stable()
 {
-    var schemaDifferences = ProtoContractGuard.VerifyProtobufSchemaStable(
+    var schemaDifferences = ProtoContractGuard.CompareCurrentToBaseline(
     [
-        typeof(IGreeterCodeFirst)
+        typeof(IGreeterCodeFirst) // Add one of your contract interfaces from each namespace. The rest will be discovered.
     ]);
 
     // Assert that there are no differences in the schema
@@ -60,7 +60,7 @@ public void VerifyProtobufSchema_Stable()
 }
 ```
 
-If a schema change is detected, the test will fail with a list of differences. The line differences include the line number, change type, and the text of the line:
+If a schema change is detected, the test will fail with a list of differences. The differences include the line number, change type, and the text of the line:
 
 ```
 ProtoContractGuard IGreeterCodeFirst differences:
@@ -76,8 +76,8 @@ ProtoContractGuard IGreeterCodeFirst differences:
 
 ## How It Works
 
-1. **Generate** — `GenerateResourceFiles` uses `protobuf-net.Grpc` to generate `.proto` schemas from your code-first service interfaces and writes them to disk.
-2. **Verify** — `VerifyProtobufSchemaStable` generates the current schema in memory and compares it against the persisted `.proto` files using an inline diff.
+1. **Generate** — `GenerateBaselineFiles` uses `protobuf-net.Grpc` to generate `.proto` schemas from your code-first service interfaces and writes them to disk.
+2. **Verify** — `CompareCurrentToBaseline` generates the current schema in memory and compares it against the persisted `.proto` files using an inline diff.
 3. **Review** — Any differences are returned as a list of diff lines, making it easy to assert in your tests and review in CI output.
 
 A test failure indicates a schema change, but not all changes break compatibility. Each should be manually reviewed.
