@@ -1,7 +1,14 @@
 syntax = "proto3";
 package Codify.GrpcCodeFirstContractGuard.TestServer.Models;
+import "google/protobuf/wrappers.proto";
 import "protobuf-net/bcl.proto"; // schema for protobuf-net's handling of core .NET types
 
+message DateTimeValue {
+   .bcl.DateTime value = 1;
+}
+message GuidValue {
+   .bcl.Guid value = 1; // default value could not be applied: 00000000-0000-0000-0000-000000000000
+}
 message HelloCodeFirstRequest {
    string Name = 1;
    string Action = 2;
@@ -19,8 +26,14 @@ message MoreInfo {
    repeated string ArrayData = 2;
 }
 service GreeterCodeFirstV2 {
+   rpc CreateId (.google.protobuf.StringValue) returns (GuidValue);
+   rpc GetNameBytes (.google.protobuf.StringValue) returns (.google.protobuf.BytesValue);
+   rpc GetNameHash (.google.protobuf.StringValue) returns (.google.protobuf.Int64Value);
+   rpc GetNameLength (.google.protobuf.StringValue) returns (.google.protobuf.Int32Value);
+   rpc GetServerTime (.google.protobuf.BoolValue) returns (DateTimeValue);
    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
    rpc SayHelloClientStream (stream HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
    rpc SayHelloDuplexStream (stream HelloCodeFirstRequest) returns (stream HelloCodeFirstResponse);
    rpc SayHelloServerStream (HelloCodeFirstRequest) returns (stream HelloCodeFirstResponse);
+   rpc StreamNames (.google.protobuf.Int32Value) returns (stream .google.protobuf.StringValue);
 }

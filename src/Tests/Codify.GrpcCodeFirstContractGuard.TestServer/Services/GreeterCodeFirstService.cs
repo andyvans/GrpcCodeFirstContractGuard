@@ -15,6 +15,16 @@ public class GreeterCodeFirstService(ILogger<GreeterCodeFirstService> logger) : 
         };
     }
 
+    public Task<bool> IsNameValid(string name, CallContext callContext)
+    {
+        return Task.FromResult(!string.IsNullOrWhiteSpace(name));
+    }
+
+    public ValueTask<double> GetScore(int age, CallContext callContext)
+    {
+        return ValueTask.FromResult(age * 1.5);
+    }
+
     public async IAsyncEnumerable<HelloCodeFirstResponse> SayHelloServerStream(HelloCodeFirstRequest request, CallContext callContext)
     {
         logger.LogInformation("Server streaming request: {@Request}", request);

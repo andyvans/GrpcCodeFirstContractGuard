@@ -17,4 +17,10 @@ public interface IGreeterCodeFirst
 
     [OperationContract]
     IAsyncEnumerable<HelloCodeFirstResponse> SayHelloDuplexStream(IAsyncEnumerable<HelloCodeFirstRequest> requests, CallContext callContext);
+
+    [OperationContract]
+    Task<bool> IsNameValid(string name, CallContext callContext);
+
+    [OperationContract]
+    ValueTask<double> GetScore(int age, CallContext callContext);
 }

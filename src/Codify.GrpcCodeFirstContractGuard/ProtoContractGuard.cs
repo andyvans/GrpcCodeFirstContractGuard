@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
+using ProtoBuf.Grpc.Configuration;
 using ProtoBuf.Grpc.Reflection;
 
 namespace Codify.GrpcCodeFirstContractGuard;
@@ -37,8 +38,7 @@ public static class ProtoContractGuard
 
         foreach (var grpcServiceInterface in grpcServiceInterfaces)
         {
-            var newSchema = schemaGenerator.GetSchema(grpcServiceInterface)
-                ?? throw new InvalidOperationException($"Proto schema should be present for {grpcServiceInterface.Name}");
+            var newSchema = GetSchema(schemaGenerator, grpcServiceInterface);
 
             var currentSchemaFile = $"{grpcServiceInterface.Name}.proto";
 
@@ -103,8 +103,7 @@ public static class ProtoContractGuard
 
         foreach (var grpcServiceInterface in grpcServiceInterfaces)
         {
-            var protoSchema = schemaGenerator.GetSchema(grpcServiceInterface)
-                ?? throw new InvalidOperationException($"Proto schema should be present for {grpcServiceInterface.Name}");
+            var protoSchema = GetSchema(schemaGenerator, grpcServiceInterface);
 
             // Write the generated schema to the project directory
             var filePath = Path.Combine(protoPath, $"{grpcServiceInterface.Name}.proto");
@@ -113,6 +112,19 @@ public static class ProtoContractGuard
         }
 
         return generatedFiles;
+    }
+
+    /// <summary>
+    ///     Generates the .proto schema for a gRPC service interface, supporting inbuilt request/response types (e.g. string, int).
+    /// </summary>
+    private static string GetSchema(SchemaGenerator schemaGenerator, Type grpcServiceInterface)
+    {
+        var schemaContract = InbuiltTypeContractProxy.GetSchemaContract(grpcServiceInterface, ServiceBinder.Default);
+
+        var schema = schemaGenerator.GetSchema(schemaContract)
+            ?? throw new InvalidOperationException($"Proto schema should be present for {grpcServiceInterface.Name}");
+
+        return InbuiltTypeContractProxy.QualifyWellKnownTypes(schema);
     }
 
     /// <summary>
@@ -126,6 +138,7 @@ public static class ProtoContractGuard
         grpcAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
 
         return grpcAssemblies
+            .Where(assembly => !assembly.IsDynamic)
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type => type.Namespace != null && contractNamespaces.Contains(type.Namespace))
             .Where(type => type.IsInterface && type.GetCustomAttribute<ServiceContractAttribute>() != null);

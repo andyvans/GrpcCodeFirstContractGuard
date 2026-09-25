@@ -42,19 +42,23 @@ public class ProtoSchemaTest
             typeof(IGreeterCodeFirst)
         ], protoFilePath: "ProtoContractGuard_Altered");
 
-        schemaDifferences.Should().BeEquivalentTo("""
+        schemaDifferences.Should().NotBeNull();
+        schemaDifferences.Split(Environment.NewLine).Should().Equal("""
             [IGreeterCodeFirst.proto] ProtoContractGuard detected differences for IGreeterCodeFirst:
+             3+ import "google/protobuf/wrappers.proto";
               -    string FirstName = 1;
-             6+    string Name = 1;
+             7+    string Name = 1;
               -    int32 Length = 3;
-             8+    int32 Age = 3;
-            12+    repeated MoreInfo MoreInfoArray = 7;
+             9+    int32 Age = 3;
+            13+    repeated MoreInfo MoreInfoArray = 7;
               -    string Information = 1;
-            18+    string Info = 1;
+            19+    string Info = 1;
               -    string Metadata = 3;
               -    rpc SayHowdy (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
-            22+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
+            23+    rpc GetScore (.google.protobuf.Int32Value) returns (.google.protobuf.DoubleValue);
+            24+    rpc IsNameValid (.google.protobuf.StringValue) returns (.google.protobuf.BoolValue);
+            25+    rpc SayHello (HelloCodeFirstRequest) returns (HelloCodeFirstResponse);
             [IGreeterCodeFirstV2.proto] ProtoContractGuard issue: No baseline found. Run GenerateBaselineFiles to create baseline for IGreeterCodeFirstV2.
-            """);
+            """.Split(Environment.NewLine));
     }
 }
