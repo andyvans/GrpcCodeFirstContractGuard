@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.ServiceModel;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
@@ -149,11 +150,54 @@ public static class ProtoContractGuard
     /// </summary>
     private static string GetGeneratedProtoPath(string protoFilePath, string callerFilePath)
     {
-        var callerDirectory = Path.GetDirectoryName(callerFilePath)
-            ?? throw new InvalidOperationException("Unable to determine caller directory.");
+        var callerDirectory = ResolveCallerDirectory(callerFilePath);
         var protoPath = Path.Combine(callerDirectory, protoFilePath);
         Directory.CreateDirectory(protoPath);
         return protoPath;
+    }
+
+    /// <summary>
+    ///     Resolves the caller's directory. With deterministic builds (e.g. ContinuousIntegrationBuild) source paths are
+    ///     mapped to a prefix such as "/_/", so the caller path does not exist on disk. In that case the mapped relative
+    ///     path is resolved against the ancestors of the application base directory.
+    /// </summary>
+    private static string ResolveCallerDirectory(string callerFilePath)
+    {
+        var callerDirectory = Path.GetDirectoryName(callerFilePath)
+            ?? throw new InvalidOperationException("Unable to determine caller directory.");
+
+        // Mapped paths (e.g. "/_/" or "/_1/") are checked first, as on Windows they resolve to the current drive root
+        var isMappedPath = Regex.IsMatch(callerFilePath, @"^/_\d*/", RegexOptions.None, TimeSpan.FromMilliseconds(100));
+        if (!isMappedPath && Directory.Exists(callerDirectory))
+        {
+            return callerDirectory;
+        }
+
+        // Strip the mapped root to get the path relative to the source root
+        var segments = callerDirectory
+            .Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries)
+            .ToList();
+        if (isMappedPath && segments.Count > 0)
+        {
+            segments.RemoveAt(0);
+        }
+
+        // Try each ancestor of the base directory combined with progressively shorter relative paths
+        for (var skip = 0; skip < segments.Count; skip++)
+        {
+            var relativePath = Path.Combine(segments.Skip(skip).ToArray());
+            for (var ancestor = new DirectoryInfo(AppContext.BaseDirectory); ancestor != null; ancestor = ancestor.Parent)
+            {
+                var candidate = Path.Combine(ancestor.FullName, relativePath);
+                if (Directory.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Unable to resolve caller directory '{callerDirectory}'. The source path may have been remapped by a deterministic build.");
     }
 
     /// <summary>

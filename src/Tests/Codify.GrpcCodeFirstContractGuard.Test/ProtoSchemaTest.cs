@@ -34,6 +34,31 @@ public class ProtoSchemaTest
         schemaDifferences.Should().BeNull("schema should be stable when code matches baseline");
     }
 
+    [Theory]
+    [InlineData("/_/src/Tests/Codify.GrpcCodeFirstContractGuard.Test/ProtoSchemaTest.cs")]
+    [InlineData("/_1/src/Tests/Codify.GrpcCodeFirstContractGuard.Test/ProtoSchemaTest.cs")]
+    [InlineData("/_/Codify.GrpcCodeFirstContractGuard.Test/ProtoSchemaTest.cs")]
+    public void VerifyProtoSchema_Stable_WithDeterministicSourcePath(string mappedCallerFilePath)
+    {
+        var schemaDifferences = ProtoContractGuard.CompareCurrentToBaseline(
+        [
+            typeof(IGreeterCodeFirst)
+        ], callerFilePath: mappedCallerFilePath);
+
+        schemaDifferences.Should().BeNull("mapped source paths should resolve to the baseline files on disk");
+    }
+
+    [Fact]
+    public void VerifyProtoSchema_UnresolvableSourcePath_Throws()
+    {
+        var act = () => ProtoContractGuard.CompareCurrentToBaseline(
+        [
+            typeof(IGreeterCodeFirst)
+        ], callerFilePath: "/_/DoesNotExist_8F3A/Missing_2C1B/ProtoSchemaTest.cs");
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
     [Fact]
     public void VerifyProtoSchema_Altered()
     {
